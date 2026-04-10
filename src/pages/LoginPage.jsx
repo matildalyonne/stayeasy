@@ -22,12 +22,17 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
     setLoading(true)
-    const { error } = await signIn(form.email, form.password)
+    const { data, error } = await signIn(form.email, form.password)
     setLoading(false)
     if (error) {
       setError(error.message)
     } else {
-      navigate(from, { replace: true })
+      const role = data.user?.user_metadata?.role
+      if (role === 'admin') {
+        navigate('/admin', { replace: true })
+      } else {
+        navigate(from === '/login' ? '/' : from, { replace: true })
+      }
     }
   }
 
@@ -35,8 +40,8 @@ export default function LoginPage() {
     <div className={styles.page}>
       <div className={styles.card}>
         <Link to="/" className={styles.logoWrap}>
-          <img src="/logo.png" alt="Stay-Eazy" className={styles.logo} />
-          <span className={styles.logoText}>Stay-Eazy</span>
+          <img src="/logo.png" alt="UniNest" className={styles.logo} />
+          <span className={styles.logoText}>UniNest</span>
         </Link>
 
         <h1 className={styles.title}>Welcome back</h1>

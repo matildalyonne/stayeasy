@@ -6,8 +6,8 @@ export default function Footer() {
     <footer className={styles.footer}>
       <div className={`${styles.inner} page-container`}>
         <div className={styles.brand}>
-          <img src="/logo.png" alt="UniNest" className={styles.logo} />
-          <span className={styles.name}>UniNest</span>
+          <img src="/logo.png" alt="Stay-Eazy" className={styles.logo} />
+          <span className={styles.name}>Stay-Eazy</span>
           <p className={styles.tagline}>Finding your home away from home.</p>
         </div>
         <div className={styles.links}>
@@ -15,7 +15,7 @@ export default function Footer() {
           <Link to="/login">Log In</Link>
           <Link to="/register">Sign Up</Link>
         </div>
-        <p className={styles.copy}>© {new Date().getFullYear()} UniNest. All rights reserved.</p>
+        <p className={styles.copy}>© {new Date().getFullYear()} Stay-Eazy. All rights reserved.</p>
       </div>
     </footer>
   )

@@ -33,8 +33,8 @@ export default function AdminLayout() {
       {/* Sidebar */}
       <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}>
         <div className={styles.sidebarHeader}>
-          <img src="/logo.png" alt="UniNest" className={styles.logo} />
-          <span className={styles.brandName}>UniNest</span>
+          <img src="/logo.png" alt="Stay-Eazy" className={styles.logo} />
+          <span className={styles.brandName}>Stay-Eazy</span>
           <button className={styles.closeBtn} onClick={() => setSidebarOpen(false)}>
             <X size={18} />
           </button>

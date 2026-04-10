@@ -1,4 +1,4 @@
-# UniNest — Student Hostel Booking Platform
+# Stay-Eazy — Student Hostel Booking Platform
 
 A full-stack hostel booking service for university students, built with **React + Vite** (frontend) and **Supabase** (backend), deployed on **Netlify**.
 

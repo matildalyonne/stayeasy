@@ -19,8 +19,8 @@ export default function Navbar() {
     <header className={styles.header}>
       <div className={`${styles.inner} page-container`}>
         <Link to="/" className={styles.logo}>
-          <img src="/logo.png" alt="UniNest" className={styles.logoImg} />
-          <span className={styles.logoText}>UniNest</span>
+          <img src="/logo.png" alt="Stay-Eazy" className={styles.logoImg} />
+          <span className={styles.logoText}>Stay-Eazy</span>
         </Link>
 
         <nav className={`${styles.nav} ${menuOpen ? styles.navOpen : ''}`}>

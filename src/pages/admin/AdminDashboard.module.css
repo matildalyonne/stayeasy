@@ -1,0 +1,139 @@
+.page { animation: fadeIn 0.3s ease; }
+
+.loadingWrap { display: flex; justify-content: center; padding: 80px 0; }
+
+.title {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--gray-900);
+  margin-bottom: 24px;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 36px;
+}
+
+.statCard {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 22px;
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+}
+
+.statCard:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+
+.statIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.blue .statIcon { background: var(--blue-50); color: var(--blue-600); }
+.blue:hover { border-color: var(--blue-200); }
+
+.green .statIcon { background: var(--green-50); color: var(--green-600); }
+.green:hover { border-color: var(--green-200); }
+
+.amber .statIcon { background: #fef9c3; color: #b45309; }
+.amber:hover { border-color: #fde68a; }
+
+.teal .statIcon { background: #f0fdfa; color: #0d9488; }
+.teal:hover { border-color: #99f6e4; }
+
+.statValue {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--gray-900);
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 0.8rem;
+  color: var(--gray-500);
+  margin-top: 3px;
+}
+
+/* Section */
+.section {
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 22px 24px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.seeAll {
+  font-size: 0.82rem;
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.empty { color: var(--gray-400); font-size: 0.875rem; }
+
+.tableWrap { overflow-x: auto; }
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.table th {
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gray-400);
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.table td {
+  padding: 12px 12px;
+  color: var(--gray-700);
+  border-bottom: 1px solid var(--gray-50);
+}
+
+.table tr:last-child td { border-bottom: none; }
+
+.badge {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.pending { background: #fef9c3; color: #92400e; }
+.confirmed { background: var(--green-100); color: var(--green-700); }
+.rejected { background: #fef2f2; color: var(--danger); }
+.cancelled { background: var(--gray-100); color: var(--gray-500); }

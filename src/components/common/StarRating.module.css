@@ -1,0 +1,34 @@
+.wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stars {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.star {
+  background: none;
+  border: none;
+  padding: 1px;
+  display: flex;
+  align-items: center;
+  cursor: default;
+  transition: transform 0.1s;
+}
+
+.interactive {
+  cursor: pointer;
+}
+
+.interactive:hover {
+  transform: scale(1.15);
+}
+
+.count {
+  font-size: 0.82rem;
+  color: var(--gray-500);
+}

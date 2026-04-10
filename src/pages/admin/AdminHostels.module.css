@@ -1,0 +1,107 @@
+.page { animation: fadeIn 0.3s ease; }
+
+.loadingWrap { display: flex; justify-content: center; padding: 80px 0; }
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--gray-900);
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 80px 0;
+  text-align: center;
+  color: var(--gray-500);
+}
+
+.tableWrap {
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  min-width: 700px;
+}
+
+.table th {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gray-400);
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.table td {
+  padding: 12px 14px;
+  color: var(--gray-700);
+  border-bottom: 1px solid var(--gray-100);
+  vertical-align: middle;
+}
+
+.table tr:last-child td { border-bottom: none; }
+.table tr:hover td { background: var(--gray-50); }
+
+.thumb {
+  width: 56px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
+.noThumb {
+  width: 56px;
+  height: 40px;
+  background: var(--gray-100);
+  border-radius: var(--radius-sm);
+}
+
+.nameCell { font-weight: 600; color: var(--gray-900); }
+
+.location {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--gray-500);
+  font-size: 0.82rem;
+}
+
+.actions { display: flex; align-items: center; gap: 6px; }
+
+.editBtn, .deleteBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--gray-200);
+  background: white;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.editBtn:hover { border-color: var(--primary); color: var(--primary); background: var(--blue-50); }
+.deleteBtn:hover:not(:disabled) { border-color: var(--danger); color: var(--danger); background: #fef2f2; }
+.deleteBtn:disabled { opacity: 0.4; cursor: not-allowed; }

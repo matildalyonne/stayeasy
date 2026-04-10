@@ -1,0 +1,133 @@
+.page { animation: fadeIn 0.3s ease; }
+
+.loadingWrap { display: flex; justify-content: center; padding: 80px 0; }
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--gray-900);
+}
+
+.filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filterBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: var(--gray-600);
+  background: white;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filterBtn:hover { border-color: var(--primary); color: var(--primary); }
+.filterActive { border-color: var(--primary); background: var(--blue-50); color: var(--primary); font-weight: 600; }
+
+.filterCount {
+  background: var(--gray-100);
+  border-radius: 99px;
+  padding: 1px 6px;
+  font-size: 0.75rem;
+}
+.filterActive .filterCount { background: var(--blue-100); }
+
+.empty { color: var(--gray-400); font-size: 0.875rem; padding: 40px 0; }
+
+.tableWrap {
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  min-width: 900px;
+}
+
+.table th {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gray-400);
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.table td {
+  padding: 12px 12px;
+  color: var(--gray-700);
+  border-bottom: 1px solid var(--gray-100);
+  vertical-align: middle;
+}
+
+.table tr:last-child td { border-bottom: none; }
+.table tr:hover td { background: var(--gray-50); }
+
+.studentCell { display: flex; flex-direction: column; gap: 2px; }
+.studentName { font-weight: 600; color: var(--gray-900); }
+.studentPhone { font-size: 0.78rem; color: var(--gray-400); }
+
+.hostelName { font-weight: 500; color: var(--gray-800); }
+
+.year { font-size: 0.78rem; color: var(--gray-400); }
+
+.dateCell { font-size: 0.82rem; color: var(--gray-400); white-space: nowrap; }
+
+.badge {
+  display: inline-flex;
+  padding: 3px 8px;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.pending { background: #fef9c3; color: #92400e; }
+.confirmed { background: var(--green-100); color: var(--green-700); }
+.rejected { background: #fef2f2; color: var(--danger); }
+.cancelled { background: var(--gray-100); color: var(--gray-500); }
+
+.actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.actionBtn {
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.actionBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.confirm { background: var(--green-100); color: var(--green-700); }
+.confirm:hover:not(:disabled) { background: var(--green-200); }
+
+.reject { background: #fef2f2; color: var(--danger); }
+.reject:hover:not(:disabled) { background: #fecaca; }

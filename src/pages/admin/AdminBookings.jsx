@@ -30,7 +30,7 @@ export default function AdminBookings() {
   const fetchBookings = async () => {
     const { data } = await supabase
       .from('bookings')
-      .select('*, hostels(name), profiles(full_name, email:id)')
+      .select('*, hostels(name), profiles!bookings_user_id_fkey(full_name)')
       .order('created_at', { ascending: false })
     setBookings(data || [])
     setLoading(false)
@@ -92,7 +92,7 @@ export default function AdminBookings() {
                 <tr key={b.id}>
                   <td>
                     <div className={styles.studentCell}>
-                      <span className={styles.studentName}>{b.profiles?.full_name || '—'}</span>
+                      <span className={styles.studentName}>{b.profiles?.full_name || b.user_id?.slice(0, 8) || '—'}</span>
                       {b.phone_number && <span className={styles.studentPhone}>{b.phone_number}</span>}
                     </div>
                   </td>

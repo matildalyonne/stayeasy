@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext({})
@@ -8,6 +8,8 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
   const [role, setRole] = useState(null)
   const [loading, setLoading] = useState(true)
+  // Prevent the onAuthStateChange INITIAL_SESSION event from double-fetching
+  const initialised = useRef(false)
 
   const fetchRole = async (userId) => {
     if (!userId) { setRole(null); return }
@@ -20,17 +22,22 @@ export function AuthProvider({ children }) {
   }
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    // onAuthStateChange fires INITIAL_SESSION synchronously on mount,
+    // so we use it as the single source of truth and skip getSession().
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
-      await fetchRole(session?.user?.id)
-      setLoading(false)
-    })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      await fetchRole(session?.user?.id)
+      if (!initialised.current) {
+        // First event (INITIAL_SESSION) — fetch role then clear the loading screen
+        initialised.current = true
+        await fetchRole(session?.user?.id)
+        setLoading(false)
+      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        await fetchRole(session?.user?.id)
+      } else if (event === 'SIGNED_OUT') {
+        setRole(null)
+      }
     })
 
     return () => subscription.unsubscribe()

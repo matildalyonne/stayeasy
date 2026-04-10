@@ -17,10 +17,10 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     const [hostelsRes, bookingsRes, recentRes] = await Promise.all([
       supabase.from('hostels').select('id', { count: 'exact', head: true }),
-      supabase.from('bookings').select('id, status', { count: 'exact' }),
+      supabase.from('bookings').select('id, status'),
       supabase
         .from('bookings')
-        .select('*, hostels(name), profiles(full_name)')
+        .select('*, hostels(name), profiles!bookings_user_id_fkey(full_name)')
         .order('created_at', { ascending: false })
         .limit(5),
     ])
@@ -84,7 +84,7 @@ export default function AdminDashboard() {
               <tbody>
                 {recentBookings.map((b) => (
                   <tr key={b.id}>
-                    <td>{b.profiles?.full_name || '—'}</td>
+                    <td>{b.profiles?.full_name || b.user_id?.slice(0, 8) || '—'}</td>
                     <td>{b.hostels?.name || '—'}</td>
                     <td>{b.semester} · {b.academic_year}</td>
                     <td>

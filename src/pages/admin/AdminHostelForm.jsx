@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
-import { ChevronLeft, Plus, X, Upload } from 'lucide-react'
+import { ChevronLeft, Plus, X, Upload, MapPin } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import Button from '../../components/common/Button'
 import Input from '../../components/common/Input'
@@ -14,10 +14,14 @@ const EMPTY_FORM = {
   location: '',
   description: '',
   price_per_semester: '',
+  total_rooms: '',
   available_rooms: '',
+  latitude: '',
+  longitude: '',
   amenities: [],
   contact_info: '',
   photos: [],
+  is_featured: false,
 }
 
 export default function AdminHostelForm() {
@@ -44,10 +48,14 @@ export default function AdminHostelForm() {
           location: data.location || '',
           description: data.description || '',
           price_per_semester: data.price_per_semester || '',
+          total_rooms: data.total_rooms ?? '',
           available_rooms: data.available_rooms ?? '',
+          latitude: data.latitude ?? '',
+          longitude: data.longitude ?? '',
           amenities: data.amenities || [],
           contact_info: data.contact_info || '',
           photos: data.photos || [],
+          is_featured: data.is_featured || false,
         })
       } catch (err) {
         setError(err.message || 'Failed to load hostel.')
@@ -58,7 +66,10 @@ export default function AdminHostelForm() {
     fetchHostel()
   }, [id])
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target
+    setForm((f) => ({ ...f, [name]: type === 'checkbox' ? checked : value }))
+  }
 
   const toggleAmenity = (a) => {
     setForm((f) => ({
@@ -106,12 +117,19 @@ export default function AdminHostelForm() {
       setError('Name, location, and price are required.')
       return
     }
+    if ((form.latitude && !form.longitude) || (!form.latitude && form.longitude)) {
+      setError('Please provide both latitude and longitude, or neither.')
+      return
+    }
     setSaving(true)
     try {
       const payload = {
         ...form,
         price_per_semester: Number(form.price_per_semester),
+        total_rooms: form.total_rooms !== '' ? Number(form.total_rooms) : null,
         available_rooms: form.available_rooms !== '' ? Number(form.available_rooms) : null,
+        latitude: form.latitude !== '' ? Number(form.latitude) : null,
+        longitude: form.longitude !== '' ? Number(form.longitude) : null,
       }
       const { error } = isEdit
         ? await supabase.from('hostels').update(payload).eq('id', id)
@@ -138,6 +156,8 @@ export default function AdminHostelForm() {
       {error && <div className={styles.errorBanner}>{error}</div>}
 
       <form onSubmit={handleSubmit} className={styles.form}>
+
+        {/* ── Basic Info ───────────────────────────────── */}
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Basic Information</h2>
           <div className={styles.grid2}>
@@ -152,21 +172,80 @@ export default function AdminHostelForm() {
               placeholder="Describe the hostel…" value={form.description}
               onChange={handleChange} rows={4} />
           </div>
-        </section>
-
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Pricing & Availability</h2>
-          <div className={styles.grid2}>
-            <Input label="Price per Semester (UGX) *" name="price_per_semester" type="number"
-              placeholder="e.g. 1200000" value={form.price_per_semester} onChange={handleChange} required />
-            <Input label="Available Rooms" name="available_rooms" type="number"
-              placeholder="e.g. 20" value={form.available_rooms} onChange={handleChange} />
-          </div>
           <Input label="Contact Info" name="contact_info"
             placeholder="Phone number or email for inquiries"
             value={form.contact_info} onChange={handleChange} />
         </section>
 
+        {/* ── Pricing & Rooms ──────────────────────────── */}
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Pricing & Rooms</h2>
+          <Input label="Price per Semester (UGX) *" name="price_per_semester" type="number"
+            placeholder="e.g. 1200000" value={form.price_per_semester} onChange={handleChange} required />
+          <div className={styles.grid2}>
+            <Input label="Total Rooms" name="total_rooms" type="number"
+              placeholder="Full room capacity"
+              helpText="The total number of rooms in the hostel."
+              value={form.total_rooms} onChange={handleChange} />
+            <Input label="Rooms Remaining" name="available_rooms" type="number"
+              placeholder="Currently bookable"
+              helpText="How many rooms are still available to book."
+              value={form.available_rooms} onChange={handleChange} />
+          </div>
+        </section>
+
+        {/* ── Location / Map ───────────────────────────── */}
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>
+            <MapPin size={15} style={{ display: 'inline', marginRight: 6 }} />
+            Map Coordinates <span className={styles.optional}>(optional)</span>
+          </h2>
+          <p className={styles.hint}>
+            Adding coordinates will show an interactive OpenStreetMap on the hostel page.
+            You can get coordinates from{' '}
+            <a href="https://www.openstreetmap.org" target="_blank" rel="noreferrer">openstreetmap.org</a>{' '}
+            by right-clicking any location.
+          </p>
+          <div className={styles.grid2}>
+            <Input label="Latitude" name="latitude" type="number"
+              placeholder="e.g. 0.3476" value={form.latitude} onChange={handleChange} />
+            <Input label="Longitude" name="longitude" type="number"
+              placeholder="e.g. 32.5825" value={form.longitude} onChange={handleChange} />
+          </div>
+          {form.latitude && form.longitude && (
+            <div className={styles.mapPreview}>
+              <iframe
+                title="Map preview"
+                src={`https://www.openstreetmap.org/export/embed.html?bbox=${Number(form.longitude)-0.005},${Number(form.latitude)-0.005},${Number(form.longitude)+0.005},${Number(form.latitude)+0.005}&layer=mapnik&marker=${form.latitude},${form.longitude}`}
+                className={styles.mapFrame}
+              />
+              <p className={styles.mapPreviewLabel}>Preview</p>
+            </div>
+          )}
+        </section>
+
+        {/* ── Featured ─────────────────────────────────── */}
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Visibility</h2>
+          <label className={styles.featuredToggle}>
+            <div className={`${styles.toggle} ${form.is_featured ? styles.toggleOn : ''}`}>
+              <input
+                type="checkbox"
+                name="is_featured"
+                className={styles.srOnly}
+                checked={form.is_featured}
+                onChange={handleChange}
+              />
+              <span className={styles.toggleThumb} />
+            </div>
+            <div>
+              <p className={styles.featuredLabel}>Mark as Top Rated</p>
+              <p className={styles.featuredHint}>Featured hostels appear in the "Top Rated" section on the home page.</p>
+            </div>
+          </label>
+        </section>
+
+        {/* ── Amenities ────────────────────────────────── */}
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Amenities</h2>
           <div className={styles.amenityGrid}>
@@ -181,6 +260,7 @@ export default function AdminHostelForm() {
           </div>
         </section>
 
+        {/* ── Photos ───────────────────────────────────── */}
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Photos</h2>
           <div className={styles.uploadWrap}>

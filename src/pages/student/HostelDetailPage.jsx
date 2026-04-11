@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import {
   MapPin, Wifi, Zap, Droplets, Shield, Car, UtensilsCrossed,
-  ChevronLeft, ChevronRight, X
+  ChevronLeft, ChevronRight, X, BedDouble
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
@@ -99,6 +99,14 @@ export default function HostelDetailPage() {
   const prevPhoto = () => setPhotoIndex((i) => (i - 1 + photos.length) % photos.length)
   const nextPhoto = () => setPhotoIndex((i) => (i + 1) % photos.length)
 
+  const hasMap = hostel?.latitude != null && hostel?.longitude != null
+  const mapSrc = hasMap
+    ? `https://www.openstreetmap.org/export/embed.html?bbox=${hostel.longitude - 0.005},${hostel.latitude - 0.005},${hostel.longitude + 0.005},${hostel.latitude + 0.005}&layer=mapnik&marker=${hostel.latitude},${hostel.longitude}`
+    : null
+
+  const roomsRemaining = hostel?.available_rooms
+  const roomsTotal = hostel?.total_rooms
+
   if (loading) return <div className={styles.loadingWrap}><Spinner /></div>
   if (error || !hostel) return (
     <div className={styles.errorPage}>
@@ -122,6 +130,7 @@ export default function HostelDetailPage() {
       <div className="page-container">
         <Link to="/hostels" className={styles.back}><ChevronLeft size={16} /> Back to listings</Link>
 
+        {/* Gallery */}
         <div className={styles.gallery}>
           {photos.length > 0 ? (
             <>
@@ -180,6 +189,30 @@ export default function HostelDetailPage() {
               </section>
             )}
 
+            {/* OpenStreetMap */}
+            {hasMap && (
+              <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>Location</h2>
+                <div className={styles.mapWrap}>
+                  <iframe
+                    title={`Map of ${hostel.name}`}
+                    src={mapSrc}
+                    className={styles.mapFrame}
+                    allowFullScreen
+                  />
+                  <a
+                    href={`https://www.openstreetmap.org/?mlat=${hostel.latitude}&mlon=${hostel.longitude}#map=17/${hostel.latitude}/${hostel.longitude}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={styles.mapLink}
+                  >
+                    View larger map ↗
+                  </a>
+                </div>
+              </section>
+            )}
+
+            {/* Reviews */}
             <section className={styles.section}>
               <h2 className={styles.sectionTitle}>Student Reviews ({reviews.length})</h2>
               {user ? (
@@ -217,26 +250,49 @@ export default function HostelDetailPage() {
             </section>
           </div>
 
+          {/* Booking sidebar */}
           <aside className={styles.sidebar}>
             <div className={styles.bookingCard}>
               <div className={styles.priceRow}>
                 <span className={styles.price}>UGX {Number(hostel.price_per_semester).toLocaleString()}</span>
                 <span className={styles.priceLabel}>/ semester</span>
               </div>
-              {hostel.available_rooms !== undefined && (
-                <p className={styles.availability}>
-                  {hostel.available_rooms > 0
-                    ? <span className={styles.available}>{hostel.available_rooms} room{hostel.available_rooms !== 1 ? 's' : ''} available</span>
-                    : <span className={styles.unavailable}>No rooms available</span>}
-                </p>
+
+              {/* Rooms display */}
+              {(roomsRemaining != null || roomsTotal != null) && (
+                <div className={styles.roomsWrap}>
+                  <BedDouble size={15} className={styles.roomsIcon} />
+                  <div className={styles.roomsInfo}>
+                    {roomsTotal != null && (
+                      <span className={styles.roomsTotal}>{roomsTotal} total rooms</span>
+                    )}
+                    {roomsRemaining != null && (
+                      <span className={roomsRemaining > 0 ? styles.available : styles.unavailable}>
+                        {roomsRemaining > 0 ? `${roomsRemaining} remaining` : 'No rooms left'}
+                      </span>
+                    )}
+                  </div>
+                </div>
               )}
+
+              {/* Rooms progress bar */}
+              {roomsTotal != null && roomsRemaining != null && (
+                <div className={styles.roomsBar}>
+                  <div
+                    className={styles.roomsBarFill}
+                    style={{ width: `${Math.max(0, Math.min(100, (roomsRemaining / roomsTotal) * 100))}%` }}
+                  />
+                </div>
+              )}
+
               <Button
                 fullWidth size="lg" variant="accent"
                 onClick={() => user ? navigate(`/book/${hostel.id}`) : navigate('/login')}
-                disabled={hostel.available_rooms === 0}
+                disabled={roomsRemaining === 0}
               >
                 {user ? 'Book Now' : 'Log in to Book'}
               </Button>
+
               {hostel.contact_info && (
                 <div className={styles.contact}>
                   <p className={styles.contactLabel}>Contact</p>

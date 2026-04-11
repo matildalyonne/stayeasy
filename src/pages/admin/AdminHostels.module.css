@@ -105,3 +105,59 @@
 .editBtn:hover { border-color: var(--primary); color: var(--primary); background: var(--blue-50); }
 .deleteBtn:hover:not(:disabled) { border-color: var(--danger); color: var(--danger); background: #fef2f2; }
 .deleteBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── New additions ───────────────────────────── */
+
+.coordsBadge {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--blue-500);
+  margin-top: 2px;
+}
+
+.roomsCell {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.roomsRemaining {
+  font-weight: 600;
+  color: var(--gray-900);
+  font-size: 0.9rem;
+}
+
+.roomsTotal {
+  font-size: 0.78rem;
+  color: var(--gray-400);
+}
+
+.featuredBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 500;
+  border: 1.5px solid var(--gray-200);
+  background: white;
+  color: var(--gray-500);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.featuredBtn:hover:not(:disabled) {
+  border-color: var(--warning);
+  color: var(--warning);
+}
+
+.featuredBtnOn {
+  background: #fef9c3;
+  border-color: #fde68a;
+  color: #b45309;
+}
+
+.featuredBtn:disabled { opacity: 0.5; cursor: not-allowed; }

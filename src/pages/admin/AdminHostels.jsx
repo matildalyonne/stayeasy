@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Pencil, Trash2, MapPin } from 'lucide-react'
+import { Plus, Pencil, Trash2, MapPin, Star } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import Button from '../../components/common/Button'
 import Spinner from '../../components/common/Spinner'
@@ -12,6 +12,7 @@ export default function AdminHostels() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [deleting, setDeleting] = useState(null)
+  const [togglingFeatured, setTogglingFeatured] = useState(null)
 
   useEffect(() => { fetchHostels() }, [])
 
@@ -40,6 +41,22 @@ export default function AdminHostels() {
       await fetchHostels()
     } finally {
       setDeleting(null)
+    }
+  }
+
+  const toggleFeatured = async (h) => {
+    setTogglingFeatured(h.id)
+    try {
+      await supabase
+        .from('hostels')
+        .update({ is_featured: !h.is_featured })
+        .eq('id', h.id)
+      // Optimistic update — flip locally without refetch
+      setHostels((prev) =>
+        prev.map((x) => x.id === h.id ? { ...x, is_featured: !x.is_featured } : x)
+      )
+    } finally {
+      setTogglingFeatured(null)
     }
   }
 
@@ -74,6 +91,7 @@ export default function AdminHostels() {
                 <th>Price / Sem</th>
                 <th>Rooms</th>
                 <th>Rating</th>
+                <th>Featured</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -86,10 +104,35 @@ export default function AdminHostels() {
                       : <div className={styles.noThumb} />}
                   </td>
                   <td className={styles.nameCell}>{h.name}</td>
-                  <td><span className={styles.location}><MapPin size={12} />{h.location}</span></td>
+                  <td>
+                    <span className={styles.location}>
+                      <MapPin size={12} />{h.location}
+                    </span>
+                    {h.latitude && h.longitude && (
+                      <span className={styles.coordsBadge}>📍 map</span>
+                    )}
+                  </td>
                   <td>UGX {Number(h.price_per_semester).toLocaleString()}</td>
-                  <td>{h.available_rooms ?? '—'}</td>
+                  <td>
+                    <div className={styles.roomsCell}>
+                      <span className={styles.roomsRemaining}>{h.available_rooms ?? '—'}</span>
+                      {h.total_rooms != null && (
+                        <span className={styles.roomsTotal}>/ {h.total_rooms}</span>
+                      )}
+                    </div>
+                  </td>
                   <td><StarRating rating={h.avg_rating || 0} size={13} /></td>
+                  <td>
+                    <button
+                      className={`${styles.featuredBtn} ${h.is_featured ? styles.featuredBtnOn : ''}`}
+                      onClick={() => toggleFeatured(h)}
+                      disabled={togglingFeatured === h.id}
+                      title={h.is_featured ? 'Remove from featured' : 'Mark as top rated'}
+                    >
+                      <Star size={14} fill={h.is_featured ? 'currentColor' : 'none'} />
+                      {h.is_featured ? 'Featured' : 'Feature'}
+                    </button>
+                  </td>
                   <td>
                     <div className={styles.actions}>
                       <Link to={`/admin/hostels/${h.id}/edit`}>

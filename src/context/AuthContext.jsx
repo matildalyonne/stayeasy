@@ -4,43 +4,60 @@ import { supabase } from '../lib/supabase'
 const AuthContext = createContext({})
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
+  const [user, setUser]       = useState(null)
   const [session, setSession] = useState(null)
-  const [role, setRole] = useState(null)
+  const [role, setRole]       = useState(null)
   const [loading, setLoading] = useState(true)
-  // Prevent the onAuthStateChange INITIAL_SESSION event from double-fetching
-  const initialised = useRef(false)
-
-  const fetchRole = async (userId) => {
-    if (!userId) { setRole(null); return }
-    const { data } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', userId)
-      .single()
-    setRole(data?.role ?? 'student')
-  }
+  const mounted = useRef(true)
 
   useEffect(() => {
-    // onAuthStateChange fires INITIAL_SESSION synchronously on mount,
-    // so we use it as the single source of truth and skip getSession().
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    mounted.current = true
+
+    const fetchRole = async (userId) => {
+      if (!userId) return null
+      const { data } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .single()
+      return data?.role ?? 'student'
+    }
+
+    // Step 1: read whatever session is already in storage.
+    // getSession() always resolves immediately and never hangs,
+    // even with an expired or missing token.
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!mounted.current) return
       setSession(session)
       setUser(session?.user ?? null)
-
-      if (!initialised.current) {
-        // First event (INITIAL_SESSION) — fetch role then clear the loading screen
-        initialised.current = true
-        await fetchRole(session?.user?.id)
-        setLoading(false)
-      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        await fetchRole(session?.user?.id)
-      } else if (event === 'SIGNED_OUT') {
-        setRole(null)
+      if (session?.user) {
+        const r = await fetchRole(session.user.id)
+        if (mounted.current) setRole(r)
       }
+      if (mounted.current) setLoading(false)
     })
 
-    return () => subscription.unsubscribe()
+    // Step 2: listen only for changes that happen AFTER the initial load.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!mounted.current) return
+
+        setSession(session)
+        setUser(session?.user ?? null)
+
+        if (event === 'SIGNED_OUT') {
+          setRole(null)
+        } else if (session?.user) {
+          const r = await fetchRole(session.user.id)
+          if (mounted.current) setRole(r)
+        }
+      }
+    )
+
+    return () => {
+      mounted.current = false
+      subscription.unsubscribe()
+    }
   }, [])
 
   const signUp = (email, password, metadata) =>
@@ -49,7 +66,13 @@ export function AuthProvider({ children }) {
   const signIn = (email, password) =>
     supabase.auth.signInWithPassword({ email, password })
 
-  const signOut = () => supabase.auth.signOut()
+  // Clear state immediately so UI responds at once, then invalidate server-side.
+  const signOut = async () => {
+    setUser(null)
+    setSession(null)
+    setRole(null)
+    await supabase.auth.signOut()
+  }
 
   const isAdmin = role === 'admin'
 

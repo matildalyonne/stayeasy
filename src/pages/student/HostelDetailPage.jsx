@@ -49,83 +49,79 @@ export default function HostelDetailPage() {
       if (mine) {
         setExistingReview(mine)
         setUserRating(mine.rating)
-        setReviewText(mine.comment)
+        setReviewText(mine.comment || '')
       }
     }
   }, [reviews, user])
 
   const fetchHostel = async () => {
-    const { data, error } = await supabase.from('hostels').select('*').eq('id', id).single()
-    if (error) setError(error.message)
-    else setHostel(data)
-    setLoading(false)
+    try {
+      const { data, error } = await supabase.from('hostels').select('*').eq('id', id).single()
+      if (error) setError(error.message)
+      else setHostel(data)
+    } catch (err) {
+      setError(err.message || 'Failed to load hostel.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const fetchReviews = async () => {
-    const { data } = await supabase
-      .from('reviews')
-      .select('*, profiles(full_name)')
-      .eq('hostel_id', id)
-      .order('created_at', { ascending: false })
-    setReviews(data || [])
+    try {
+      const { data } = await supabase
+        .from('reviews')
+        .select('*, profiles(full_name)')
+        .eq('hostel_id', id)
+        .order('created_at', { ascending: false })
+      setReviews(data || [])
+    } catch (_) {}
   }
 
   const submitReview = async () => {
     if (!userRating) { setReviewError('Please select a star rating.'); return }
     setSubmitting(true)
     setReviewError('')
-    const payload = { hostel_id: id, user_id: user.id, rating: userRating, comment: reviewText }
-
-    let err
-    if (existingReview) {
-      const { error } = await supabase.from('reviews').update(payload).eq('id', existingReview.id)
-      err = error
-    } else {
-      const { error } = await supabase.from('reviews').insert(payload)
-      err = error
-    }
-
-    if (err) {
+    try {
+      const payload = { hostel_id: id, user_id: user.id, rating: userRating, comment: reviewText }
+      const { error } = existingReview
+        ? await supabase.from('reviews').update(payload).eq('id', existingReview.id)
+        : await supabase.from('reviews').insert(payload)
+      if (error) setReviewError(error.message)
+      else { await fetchReviews(); await fetchHostel() }
+    } catch (err) {
       setReviewError(err.message)
-    } else {
-      await fetchReviews()
-      await fetchHostel()
+    } finally {
+      setSubmitting(false)
     }
-    setSubmitting(false)
   }
 
   const photos = hostel?.photos || []
-
   const prevPhoto = () => setPhotoIndex((i) => (i - 1 + photos.length) % photos.length)
   const nextPhoto = () => setPhotoIndex((i) => (i + 1) % photos.length)
 
   if (loading) return <div className={styles.loadingWrap}><Spinner /></div>
-  if (error || !hostel) return <div className={styles.errorPage}><p>{error || 'Hostel not found.'}</p><Link to="/hostels">← Back to listings</Link></div>
+  if (error || !hostel) return (
+    <div className={styles.errorPage}>
+      <p>{error || 'Hostel not found.'}</p>
+      <Link to="/hostels">← Back to listings</Link>
+    </div>
+  )
 
   return (
     <div className={styles.page}>
-      {/* Lightbox */}
       {lightbox && photos.length > 0 && (
         <div className={styles.lightbox} onClick={() => setLightbox(false)}>
           <button className={styles.lightboxClose}><X size={24} /></button>
           <button className={styles.lightboxPrev} onClick={(e) => { e.stopPropagation(); prevPhoto() }}><ChevronLeft size={28} /></button>
-          <img
-            src={photos[photoIndex]}
-            alt={`Photo ${photoIndex + 1}`}
-            className={styles.lightboxImg}
-            onClick={(e) => e.stopPropagation()}
-          />
+          <img src={photos[photoIndex]} alt={`Photo ${photoIndex + 1}`} className={styles.lightboxImg} onClick={(e) => e.stopPropagation()} />
           <button className={styles.lightboxNext} onClick={(e) => { e.stopPropagation(); nextPhoto() }}><ChevronRight size={28} /></button>
           <span className={styles.lightboxCount}>{photoIndex + 1} / {photos.length}</span>
         </div>
       )}
 
       <div className="page-container">
-        <Link to="/hostels" className={styles.back}>
-          <ChevronLeft size={16} /> Back to listings
-        </Link>
+        <Link to="/hostels" className={styles.back}><ChevronLeft size={16} /> Back to listings</Link>
 
-        {/* Photo gallery */}
         <div className={styles.gallery}>
           {photos.length > 0 ? (
             <>
@@ -143,11 +139,7 @@ export default function HostelDetailPage() {
               {photos.length > 1 && (
                 <div className={styles.thumbs}>
                   {photos.map((p, i) => (
-                    <button
-                      key={i}
-                      className={`${styles.thumb} ${i === photoIndex ? styles.thumbActive : ''}`}
-                      onClick={() => setPhotoIndex(i)}
-                    >
+                    <button key={i} className={`${styles.thumb} ${i === photoIndex ? styles.thumbActive : ''}`} onClick={() => setPhotoIndex(i)}>
                       <img src={p} alt={`Thumb ${i + 1}`} />
                     </button>
                   ))}
@@ -160,7 +152,6 @@ export default function HostelDetailPage() {
         </div>
 
         <div className={styles.layout}>
-          {/* Main info */}
           <div className={styles.main}>
             <h1 className={styles.name}>{hostel.name}</h1>
             <div className={styles.meta}>
@@ -189,10 +180,8 @@ export default function HostelDetailPage() {
               </section>
             )}
 
-            {/* Reviews */}
             <section className={styles.section}>
               <h2 className={styles.sectionTitle}>Student Reviews ({reviews.length})</h2>
-
               {user ? (
                 <div className={styles.reviewForm}>
                   <p className={styles.reviewFormTitle}>{existingReview ? 'Update your review' : 'Leave a review'}</p>
@@ -210,11 +199,8 @@ export default function HostelDetailPage() {
                   </Button>
                 </div>
               ) : (
-                <p className={styles.loginPrompt}>
-                  <Link to="/login">Log in</Link> to leave a review.
-                </p>
+                <p className={styles.loginPrompt}><Link to="/login">Log in</Link> to leave a review.</p>
               )}
-
               <div className={styles.reviewList}>
                 {reviews.length === 0 && <p className={styles.noReviews}>No reviews yet. Be the first!</p>}
                 {reviews.map((r) => (
@@ -231,7 +217,6 @@ export default function HostelDetailPage() {
             </section>
           </div>
 
-          {/* Sidebar booking card */}
           <aside className={styles.sidebar}>
             <div className={styles.bookingCard}>
               <div className={styles.priceRow}>
@@ -246,9 +231,7 @@ export default function HostelDetailPage() {
                 </p>
               )}
               <Button
-                fullWidth
-                size="lg"
-                variant="accent"
+                fullWidth size="lg" variant="accent"
                 onClick={() => user ? navigate(`/book/${hostel.id}`) : navigate('/login')}
                 disabled={hostel.available_rooms === 0}
               >

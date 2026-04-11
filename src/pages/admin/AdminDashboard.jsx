@@ -9,34 +9,41 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState(null)
   const [recentBookings, setRecentBookings] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  useEffect(() => {
-    fetchData()
-  }, [])
+  useEffect(() => { fetchData() }, [])
 
   const fetchData = async () => {
-    const [hostelsRes, bookingsRes, recentRes] = await Promise.all([
-      supabase.from('hostels').select('id', { count: 'exact', head: true }),
-      supabase.from('bookings').select('id, status'),
-      supabase
-        .from('bookings')
-        .select('*, hostels(name), profiles!bookings_user_id_fkey(full_name)')
-        .order('created_at', { ascending: false })
-        .limit(5),
-    ])
+    setLoading(true)
+    setError('')
+    try {
+      const [hostelsRes, bookingsRes, recentRes] = await Promise.all([
+        supabase.from('hostels').select('id', { count: 'exact', head: true }),
+        supabase.from('bookings').select('id, status'),
+        supabase
+          .from('bookings')
+          .select('*, hostels(name), profiles!bookings_user_id_fkey(full_name)')
+          .order('created_at', { ascending: false })
+          .limit(5),
+      ])
 
-    const allBookings = bookingsRes.data || []
-    setStats({
-      totalHostels: hostelsRes.count || 0,
-      totalBookings: allBookings.length,
-      pendingBookings: allBookings.filter((b) => b.status === 'pending').length,
-      confirmedBookings: allBookings.filter((b) => b.status === 'confirmed').length,
-    })
-    setRecentBookings(recentRes.data || [])
-    setLoading(false)
+      const allBookings = bookingsRes.data || []
+      setStats({
+        totalHostels: hostelsRes.count || 0,
+        totalBookings: allBookings.length,
+        pendingBookings: allBookings.filter((b) => b.status === 'pending').length,
+        confirmedBookings: allBookings.filter((b) => b.status === 'confirmed').length,
+      })
+      setRecentBookings(recentRes.data || [])
+    } catch (err) {
+      setError(err.message || 'Failed to load dashboard.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (loading) return <div className={styles.loadingWrap}><Spinner /></div>
+  if (error) return <div className={styles.loadingWrap}><p style={{color:'var(--danger)'}}>{error}</p></div>
 
   const cards = [
     { label: 'Total Hostels', value: stats.totalHostels, icon: <Building2 size={20} />, color: 'blue', to: '/admin/hostels' },
@@ -87,11 +94,7 @@ export default function AdminDashboard() {
                     <td>{b.profiles?.full_name || b.user_id?.slice(0, 8) || '—'}</td>
                     <td>{b.hostels?.name || '—'}</td>
                     <td>{b.semester} · {b.academic_year}</td>
-                    <td>
-                      <span className={`${styles.badge} ${styles[b.status]}`}>
-                        {b.status}
-                      </span>
-                    </td>
+                    <td><span className={`${styles.badge} ${styles[b.status]}`}>{b.status}</span></td>
                     <td>{new Date(b.created_at).toLocaleDateString()}</td>
                   </tr>
                 ))}

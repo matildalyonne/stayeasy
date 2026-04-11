@@ -15,8 +15,8 @@ export default function BookingPage() {
 
   const [hostel, setHostel] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
 
   const [form, setForm] = useState({
@@ -29,11 +29,19 @@ export default function BookingPage() {
   })
 
   useEffect(() => {
-    supabase.from('hostels').select('*').eq('id', id).single().then(({ data, error }) => {
-      if (error) setError(error.message)
-      else setHostel(data)
-      setLoading(false)
-    })
+    const fetchHostel = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('hostels').select('*').eq('id', id).single()
+        if (error) setError(error.message)
+        else setHostel(data)
+      } catch (err) {
+        setError(err.message || 'Failed to load hostel.')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchHostel()
   }, [id])
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
@@ -46,21 +54,26 @@ export default function BookingPage() {
       return
     }
     setSubmitting(true)
-    const { error } = await supabase.from('bookings').insert({
-      hostel_id: id,
-      user_id: user.id,
-      semester: form.semester,
-      academic_year: form.academic_year,
-      room_type: form.room_type,
-      special_requests: form.special_requests,
-      payment_method: form.payment_method,
-      phone_number: form.phone_number,
-      status: 'pending',
-      total_amount: hostel.price_per_semester,
-    })
-    setSubmitting(false)
-    if (error) setError(error.message)
-    else setSuccess(true)
+    try {
+      const { error } = await supabase.from('bookings').insert({
+        hostel_id: id,
+        user_id: user.id,
+        semester: form.semester,
+        academic_year: form.academic_year,
+        room_type: form.room_type || null,
+        special_requests: form.special_requests || null,
+        payment_method: form.payment_method,
+        phone_number: form.phone_number || null,
+        status: 'pending',
+        total_amount: hostel.price_per_semester,
+      })
+      if (error) setError(error.message)
+      else setSuccess(true)
+    } catch (err) {
+      setError(err.message || 'Booking failed.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   if (loading) return <div className={styles.loadingWrap}><Spinner /></div>
@@ -92,10 +105,11 @@ export default function BookingPage() {
         </Link>
 
         <div className={styles.layout}>
-          {/* Form */}
           <div className={styles.formSection}>
             <h1 className={styles.title}>Complete your booking</h1>
-            <p className={styles.subtitle}>Fill in the details below to reserve your room at <strong>{hostel?.name}</strong>.</p>
+            <p className={styles.subtitle}>
+              Fill in the details below to reserve your room at <strong>{hostel?.name}</strong>.
+            </p>
 
             {error && <div className={styles.errorBanner}>{error}</div>}
 
@@ -140,7 +154,7 @@ export default function BookingPage() {
                 <textarea
                   name="special_requests"
                   className={styles.textarea}
-                  placeholder="Any special requirements or requests…"
+                  placeholder="Any special requirements…"
                   value={form.special_requests}
                   onChange={handleChange}
                   rows={3}
@@ -175,7 +189,6 @@ export default function BookingPage() {
             </form>
           </div>
 
-          {/* Summary sidebar */}
           <aside className={styles.summary}>
             <div className={styles.summaryCard}>
               <h3 className={styles.summaryTitle}>Booking Summary</h3>
@@ -195,7 +208,7 @@ export default function BookingPage() {
                 <span className={styles.summaryTotal}>UGX {Number(hostel?.price_per_semester).toLocaleString()}</span>
               </div>
               <p className={styles.summaryNote}>
-                Your booking will be confirmed by the hostel administrator. You will be notified once confirmed.
+                Your booking will be confirmed by the hostel administrator.
               </p>
             </div>
           </aside>

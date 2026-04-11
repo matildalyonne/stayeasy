@@ -6,41 +6,46 @@ import styles from './AdminBookings.module.css'
 const STATUSES = ['all', 'pending', 'confirmed', 'rejected', 'cancelled']
 
 const STATUS_ACTIONS = {
-  pending: [
-    { label: 'Confirm', next: 'confirmed', cls: 'confirm' },
-    { label: 'Reject', next: 'rejected', cls: 'reject' },
-  ],
-  confirmed: [
-    { label: 'Reject', next: 'rejected', cls: 'reject' },
-  ],
-  rejected: [
-    { label: 'Confirm', next: 'confirmed', cls: 'confirm' },
-  ],
+  pending:   [{ label: 'Confirm', next: 'confirmed', cls: 'confirm' }, { label: 'Reject', next: 'rejected', cls: 'reject' }],
+  confirmed: [{ label: 'Reject', next: 'rejected', cls: 'reject' }],
+  rejected:  [{ label: 'Confirm', next: 'confirmed', cls: 'confirm' }],
   cancelled: [],
 }
 
 export default function AdminBookings() {
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [filter, setFilter] = useState('all')
   const [updating, setUpdating] = useState(null)
 
   useEffect(() => { fetchBookings() }, [])
 
   const fetchBookings = async () => {
-    const { data } = await supabase
-      .from('bookings')
-      .select('*, hostels(name), profiles!bookings_user_id_fkey(full_name)')
-      .order('created_at', { ascending: false })
-    setBookings(data || [])
-    setLoading(false)
+    setLoading(true)
+    setError('')
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('*, hostels(name), profiles!bookings_user_id_fkey(full_name)')
+        .order('created_at', { ascending: false })
+      if (error) setError(error.message)
+      else setBookings(data || [])
+    } catch (err) {
+      setError(err.message || 'Failed to load bookings.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const updateStatus = async (id, status) => {
     setUpdating(id)
-    await supabase.from('bookings').update({ status }).eq('id', id)
-    await fetchBookings()
-    setUpdating(null)
+    try {
+      await supabase.from('bookings').update({ status }).eq('id', id)
+      await fetchBookings()
+    } finally {
+      setUpdating(null)
+    }
   }
 
   const filtered = filter === 'all' ? bookings : bookings.filter((b) => b.status === filter)
@@ -68,6 +73,8 @@ export default function AdminBookings() {
           ))}
         </div>
       </div>
+
+      {error && <p style={{ color: 'var(--danger)', marginBottom: 16 }}>{error}</p>}
 
       {filtered.length === 0 ? (
         <p className={styles.empty}>No bookings found.</p>
@@ -101,11 +108,7 @@ export default function AdminBookings() {
                   <td style={{ textTransform: 'capitalize' }}>{b.room_type || '—'}</td>
                   <td style={{ textTransform: 'capitalize' }}>{b.payment_method?.replace('_', ' ')}</td>
                   <td>UGX {Number(b.total_amount).toLocaleString()}</td>
-                  <td>
-                    <span className={`${styles.badge} ${styles[b.status]}`}>
-                      {b.status}
-                    </span>
-                  </td>
+                  <td><span className={`${styles.badge} ${styles[b.status]}`}>{b.status}</span></td>
                   <td className={styles.dateCell}>{new Date(b.created_at).toLocaleDateString()}</td>
                   <td>
                     <div className={styles.actions}>

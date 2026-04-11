@@ -10,7 +10,7 @@ export default function LoginPage() {
   const { signIn } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const from = location.state?.from?.pathname || '/'
+  const from = location.state?.from?.pathname
 
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
@@ -22,17 +22,22 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
     setLoading(true)
-    const { data, error } = await signIn(form.email, form.password)
-    setLoading(false)
-    if (error) {
-      setError(error.message)
-    } else {
-      const role = data.user?.user_metadata?.role
-      if (role === 'admin') {
-        navigate('/admin', { replace: true })
+    try {
+      const { data, error } = await signIn(form.email, form.password)
+      if (error) {
+        setError(error.message)
       } else {
-        navigate(from === '/login' ? '/' : from, { replace: true })
+        const role = data?.user?.user_metadata?.role
+        if (role === 'admin') {
+          navigate('/admin', { replace: true })
+        } else {
+          navigate(from && from !== '/login' ? from : '/', { replace: true })
+        }
       }
+    } catch (err) {
+      setError(err.message || 'Login failed.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -41,7 +46,7 @@ export default function LoginPage() {
       <div className={styles.card}>
         <Link to="/" className={styles.logoWrap}>
           <img src="/logo.png" alt="UniNest" className={styles.logo} />
-          <span className={styles.logoText}>UniNest</span>
+          <span className={styles.logoText}>Stay-Eazy</span>
         </Link>
 
         <h1 className={styles.title}>Welcome back</h1>

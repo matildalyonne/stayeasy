@@ -7,9 +7,9 @@ import Spinner from '../../components/common/Spinner'
 import styles from './MyBookingsPage.module.css'
 
 const STATUS_CONFIG = {
-  pending: { label: 'Pending', icon: <Clock size={14} />, cls: 'pending' },
+  pending:   { label: 'Pending',   icon: <Clock size={14} />,       cls: 'pending' },
   confirmed: { label: 'Confirmed', icon: <CheckCircle size={14} />, cls: 'confirmed' },
-  rejected: { label: 'Rejected', icon: <XCircle size={14} />, cls: 'rejected' },
+  rejected:  { label: 'Rejected',  icon: <XCircle size={14} />,     cls: 'rejected' },
   cancelled: { label: 'Cancelled', icon: <AlertCircle size={14} />, cls: 'cancelled' },
 }
 
@@ -17,28 +17,38 @@ export default function MyBookingsPage() {
   const { user } = useAuth()
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [cancelling, setCancelling] = useState(null)
 
-  useEffect(() => {
-    fetchBookings()
-  }, [])
+  useEffect(() => { fetchBookings() }, [])
 
   const fetchBookings = async () => {
-    const { data } = await supabase
-      .from('bookings')
-      .select('*, hostels(id, name, location, photos, price_per_semester)')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-    setBookings(data || [])
-    setLoading(false)
+    setLoading(true)
+    setError('')
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('*, hostels(id, name, location, photos, price_per_semester)')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+      if (error) setError(error.message)
+      else setBookings(data || [])
+    } catch (err) {
+      setError(err.message || 'Failed to load bookings.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleCancel = async (bookingId) => {
     if (!confirm('Are you sure you want to cancel this booking?')) return
     setCancelling(bookingId)
-    await supabase.from('bookings').update({ status: 'cancelled' }).eq('id', bookingId)
-    await fetchBookings()
-    setCancelling(null)
+    try {
+      await supabase.from('bookings').update({ status: 'cancelled' }).eq('id', bookingId)
+      await fetchBookings()
+    } finally {
+      setCancelling(null)
+    }
   }
 
   if (loading) return <div className={styles.loadingWrap}><Spinner /></div>
@@ -50,6 +60,8 @@ export default function MyBookingsPage() {
           <h1 className={styles.title}>My Bookings</h1>
           <Link to="/hostels" className={styles.browseLink}>Browse more hostels →</Link>
         </div>
+
+        {error && <p style={{ color: 'var(--danger)', marginBottom: 16 }}>{error}</p>}
 
         {bookings.length === 0 ? (
           <div className={styles.empty}>

@@ -10,25 +10,37 @@ import styles from './AdminHostels.module.css'
 export default function AdminHostels() {
   const [hostels, setHostels] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [deleting, setDeleting] = useState(null)
 
   useEffect(() => { fetchHostels() }, [])
 
   const fetchHostels = async () => {
-    const { data } = await supabase
-      .from('hostels')
-      .select('*')
-      .order('created_at', { ascending: false })
-    setHostels(data || [])
-    setLoading(false)
+    setLoading(true)
+    setError('')
+    try {
+      const { data, error } = await supabase
+        .from('hostels')
+        .select('*')
+        .order('created_at', { ascending: false })
+      if (error) setError(error.message)
+      else setHostels(data || [])
+    } catch (err) {
+      setError(err.message || 'Failed to load hostels.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleDelete = async (id, name) => {
     if (!confirm(`Delete "${name}"? This cannot be undone.`)) return
     setDeleting(id)
-    await supabase.from('hostels').delete().eq('id', id)
-    await fetchHostels()
-    setDeleting(null)
+    try {
+      await supabase.from('hostels').delete().eq('id', id)
+      await fetchHostels()
+    } finally {
+      setDeleting(null)
+    }
   }
 
   if (loading) return <div className={styles.loadingWrap}><Spinner /></div>
@@ -41,6 +53,8 @@ export default function AdminHostels() {
           <Button icon={<Plus size={16} />}>Add Hostel</Button>
         </Link>
       </div>
+
+      {error && <p style={{ color: 'var(--danger)', marginBottom: 16 }}>{error}</p>}
 
       {hostels.length === 0 ? (
         <div className={styles.empty}>
@@ -67,21 +81,15 @@ export default function AdminHostels() {
               {hostels.map((h) => (
                 <tr key={h.id}>
                   <td>
-                    {h.photos?.[0] ? (
-                      <img src={h.photos[0]} alt={h.name} className={styles.thumb} />
-                    ) : (
-                      <div className={styles.noThumb} />
-                    )}
+                    {h.photos?.[0]
+                      ? <img src={h.photos[0]} alt={h.name} className={styles.thumb} />
+                      : <div className={styles.noThumb} />}
                   </td>
                   <td className={styles.nameCell}>{h.name}</td>
-                  <td>
-                    <span className={styles.location}><MapPin size={12} />{h.location}</span>
-                  </td>
+                  <td><span className={styles.location}><MapPin size={12} />{h.location}</span></td>
                   <td>UGX {Number(h.price_per_semester).toLocaleString()}</td>
                   <td>{h.available_rooms ?? '—'}</td>
-                  <td>
-                    <StarRating rating={h.avg_rating || 0} size={13} />
-                  </td>
+                  <td><StarRating rating={h.avg_rating || 0} size={13} /></td>
                   <td>
                     <div className={styles.actions}>
                       <Link to={`/admin/hostels/${h.id}/edit`}>

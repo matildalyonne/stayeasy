@@ -9,7 +9,7 @@ import styles from './HostelListPage.module.css'
 const AMENITY_OPTIONS = ['wifi', 'electricity', 'water', 'security', 'parking', 'cafeteria']
 
 export default function HostelListPage() {
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchParams] = useSearchParams()
   const [hostels, setHostels] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -27,19 +27,22 @@ export default function HostelListPage() {
   const fetchHostels = async () => {
     setLoading(true)
     setError('')
-    let q = supabase
-      .from('hostels')
-      .select('*')
+    try {
+      let q = supabase.from('hostels').select('*')
 
-    if (sortBy === 'price_asc') q = q.order('price_per_semester', { ascending: true })
-    else if (sortBy === 'price_desc') q = q.order('price_per_semester', { ascending: false })
-    else if (sortBy === 'rating') q = q.order('avg_rating', { ascending: false })
-    else q = q.order('created_at', { ascending: false })
+      if (sortBy === 'price_asc') q = q.order('price_per_semester', { ascending: true })
+      else if (sortBy === 'price_desc') q = q.order('price_per_semester', { ascending: false })
+      else if (sortBy === 'rating') q = q.order('avg_rating', { ascending: false })
+      else q = q.order('created_at', { ascending: false })
 
-    const { data, error } = await q
-    if (error) setError(error.message)
-    else setHostels(data || [])
-    setLoading(false)
+      const { data, error } = await q
+      if (error) setError(error.message)
+      else setHostels(data || [])
+    } catch (err) {
+      setError(err.message || 'Failed to load hostels.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const toggleAmenity = (a) => {
@@ -71,7 +74,6 @@ export default function HostelListPage() {
   return (
     <div className={styles.page}>
       <div className="page-container">
-        {/* Topbar */}
         <div className={styles.topbar}>
           <div>
             <h1 className={styles.title}>Browse Hostels</h1>
@@ -111,7 +113,6 @@ export default function HostelListPage() {
           </div>
         </div>
 
-        {/* Filters panel */}
         {showFilters && (
           <div className={styles.filtersPanel}>
             <div className={styles.filterGroup}>
@@ -147,11 +148,15 @@ export default function HostelListPage() {
           </div>
         )}
 
-        {/* Results */}
         {loading ? (
           <div className={styles.loadingWrap}><Spinner /></div>
         ) : error ? (
-          <div className={styles.errorMsg}>{error}</div>
+          <div className={styles.errorMsg}>
+            <p>{error}</p>
+            <button className={styles.clearBtn} onClick={fetchHostels} style={{ marginTop: 12 }}>
+              Retry
+            </button>
+          </div>
         ) : filtered.length === 0 ? (
           <div className={styles.empty}>
             <p>No hostels match your search.</p>

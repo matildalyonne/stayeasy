@@ -71,7 +71,7 @@ body {
   /* Background image — place your file at public/background (any extension works) */
   background-image: url('/background.png');
   background-blend-mode: darken;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.8);
   background-attachment: fixed;
   background-size: cover;
   background-position: center;

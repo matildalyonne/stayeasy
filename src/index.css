@@ -5,26 +5,26 @@
 }
 
 :root {
-  /* Brand */
-  --blue-50: #eff6ff;
-  --blue-100: #dbeafe;
-  --blue-200: #bfdbfe;
-  --blue-400: #60a5fa;
-  --blue-500: #3b82f6;
-  --blue-600: #2563eb;
-  --blue-700: #1d4ed8;
-  --blue-900: #1e3a8a;
+  /* Brand — exact values as specified */
+  --blue-50:  #edf5ee;
+  --blue-100: #cce4d0;
+  --blue-200: #99c9a2;
+  --blue-400: #5fa86b;
+  --blue-500: #3B8246;
+  --blue-600: #3B8246;
+  --blue-700: #2f6838;
+  --blue-900: #1a3b20;
 
-  --green-50: #f0fdf4;
-  --green-100: #dcfce7;
-  --green-200: #bbf7d0;
-  --green-400: #4ade80;
-  --green-500: #22c55e;
-  --green-600: #16a34a;
-  --green-700: #15803d;
+  --green-50:  #ecfdf5;
+  --green-100: #d1fae5;
+  --green-200: #a7f3d0;
+  --green-400: #34d399;
+  --green-500: #10B981;
+  --green-600: #10B981;
+  --green-700: #059669;
 
   /* Neutrals */
-  --gray-50: #f8fafc;
+  --gray-50:  #f8fafc;
   --gray-100: #f1f5f9;
   --gray-200: #e2e8f0;
   --gray-300: #cbd5e1;
@@ -36,29 +36,29 @@
   --gray-900: #0f172a;
 
   /* Semantic */
-  --primary: var(--blue-600);
-  --primary-hover: var(--blue-700);
-  --primary-light: var(--blue-50);
-  --accent: var(--green-600);
-  --accent-hover: var(--green-700);
-  --accent-light: var(--green-50);
-  --danger: #ef4444;
-  --danger-hover: #dc2626;
-  --warning: #f59e0b;
+  --primary:       #3B8246;
+  --primary-hover: #2f6838;
+  --primary-light: #edf5ee;
+  --accent:        #10B981;
+  --accent-hover:  #059669;
+  --accent-light:  #ecfdf5;
+  --danger:        #ef4444;
+  --danger-hover:  #dc2626;
+  --warning:       #f59e0b;
 
   /* Typography */
-  --font-display: 'Syne', sans-serif;
-  --font-body: 'DM Sans', sans-serif;
+  --font-display: 'Poppins', sans-serif;
+  --font-body:    'Open Sans', sans-serif;
 
   /* Spacing */
   --radius-sm: 6px;
-  --radius: 10px;
+  --radius:    10px;
   --radius-lg: 16px;
   --radius-xl: 24px;
 
   /* Shadows */
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
-  --shadow: 0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow:    0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
   --shadow-md: 0 4px 16px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06);
   --shadow-lg: 0 8px 32px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.06);
 }
@@ -67,7 +67,15 @@ html { scroll-behavior: smooth; }
 
 body {
   font-family: var(--font-body);
-  background: var(--gray-50);
+  font-weight: 400;
+  /* Background image — place your file at public/background (any extension works) */
+  background-image: url('/background');
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  /* Fallback colour while image loads */
+  background-color: #f0f7f1;
   color: var(--gray-900);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -75,6 +83,7 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
+  font-weight: 700;
   line-height: 1.2;
 }
 
@@ -97,7 +106,7 @@ input, textarea, select {
 /* Animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes spin {

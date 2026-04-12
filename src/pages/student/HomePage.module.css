@@ -100,7 +100,7 @@
   right: -80px;
   width: 480px;
   height: 480px;
-  background: radial-gradient(circle, rgba(37,99,235,0.08) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(59,130,70,0.08) 0%, transparent 70%);
   border-radius: 50%;
 }
 
@@ -110,7 +110,7 @@
   right: 200px;
   width: 300px;
   height: 300px;
-  background: radial-gradient(circle, rgba(22,163,74,0.07) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(16,185,129,0.07) 0%, transparent 70%);
   border-radius: 50%;
 }
 

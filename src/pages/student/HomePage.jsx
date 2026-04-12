@@ -103,7 +103,7 @@ export default function HomePage() {
       {/* Features */}
       <section className={styles.features}>
         <div className="page-container">
-          <h2 className={styles.sectionTitle}>Why students choose UniNest</h2>
+          <h2 className={styles.sectionTitle}>Why students choose Stay-Eazy</h2>
           <div className={styles.featureGrid}>
             {FEATURES.map((f) => (
               <div key={f.title} className={styles.featureCard}>

@@ -30,8 +30,10 @@ export default function HomePage() {
           .order('avg_rating', { ascending: false })
           .limit(6)
         setFeatured(data || [])
-      } catch (_) {}
-      finally { setFeaturedLoading(false) }
+      } catch (_) {
+      } finally {
+        setFeaturedLoading(false)
+      }
     }
     fetchFeatured()
   }, [])

@@ -69,13 +69,13 @@ body {
   font-family: var(--font-body);
   font-weight: 400;
   /* Background image — place your file at public/background (any extension works) */
-  background-image: url('/background.png');
+  background-image: url('/background.jpg');
+  background-blend-mode: darken;
+  background-color: rgba(0, 0, 0, 0.5);
   background-attachment: fixed;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  /* Fallback colour while image loads */
-  background-color: #f0f7f1;
   color: var(--gray-900);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;

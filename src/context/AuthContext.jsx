@@ -15,17 +15,20 @@ export function AuthProvider({ children }) {
 
     const fetchRole = async (userId) => {
       if (!userId) return null
-      const { data } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', userId)
-        .single()
-      return data?.role ?? 'student'
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', userId)
+          .single()
+        return data?.role ?? 'student'
+      } catch {
+        // If the profiles query fails for any reason, default to student
+        // so loading is never blocked
+        return 'student'
+      }
     }
 
-    // Step 1: read whatever session is already in storage.
-    // getSession() always resolves immediately and never hangs,
-    // even with an expired or missing token.
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!mounted.current) return
       setSession(session)
@@ -34,17 +37,18 @@ export function AuthProvider({ children }) {
         const r = await fetchRole(session.user.id)
         if (mounted.current) setRole(r)
       }
+      // Always clear loading — even if fetchRole failed
+      if (mounted.current) setLoading(false)
+    }).catch(() => {
+      // getSession itself failed — clear loading so app isn't stuck
       if (mounted.current) setLoading(false)
     })
 
-    // Step 2: listen only for changes that happen AFTER the initial load.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted.current) return
-
         setSession(session)
         setUser(session?.user ?? null)
-
         if (event === 'SIGNED_OUT') {
           setRole(null)
         } else if (session?.user) {
@@ -66,7 +70,6 @@ export function AuthProvider({ children }) {
   const signIn = (email, password) =>
     supabase.auth.signInWithPassword({ email, password })
 
-  // Clear state immediately so UI responds at once, then invalidate server-side.
   const signOut = async () => {
     setUser(null)
     setSession(null)

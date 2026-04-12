@@ -69,7 +69,7 @@ body {
   font-family: var(--font-body);
   font-weight: 400;
   /* Background image — place your file at public/background (any extension works) */
-  background-image: url('/background');
+  background-image: url('/background.png');
   background-attachment: fixed;
   background-size: cover;
   background-position: center;
